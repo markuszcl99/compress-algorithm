@@ -1,11 +1,9 @@
 package com.markus.compress.demo;
 
+import com.alibaba.fastjson.JSONObject;
 import com.markus.compress.domain.User;
 import com.markus.compress.service.UserService;
-import com.markus.compress.utils.GzipUtils;
-import com.markus.compress.utils.Lz4Utils;
-import com.markus.compress.utils.ProtostuffUtils;
-import com.markus.compress.utils.SnappyUtils;
+import com.markus.compress.utils.*;
 
 /**
  * @author: markus
@@ -16,13 +14,18 @@ import com.markus.compress.utils.SnappyUtils;
 public class CompressDemo {
     public static void main(String[] args) {
         User user = new UserService().get();
-        // 序列化
+        // json序列化
+        byte[] origin_json = JSONObject.toJSONBytes(user);
+        System.out.println("原始json字节数: " + origin_json.length);
+        // pb序列化
         byte[] origin = ProtostuffUtils.serialize(user);
-        System.out.println("原始字节数: " + origin.length);
+        System.out.println("原始pb字节数: " + origin.length);
 
         testGzip(origin, user);
         testSnappy(origin, user);
         testLz4(origin, user);
+        testBzip2(origin, user);
+        testDeflate(origin, user);
     }
 
     private static void testGzip(byte[] origin, User user) {
@@ -55,6 +58,28 @@ public class CompressDemo {
         byte[] Lz4Uncompress = Lz4Utils.uncompress(Lz4Compress);
         System.out.println("Lz4解压缩: " + Lz4Uncompress.length);
         User deUser = ProtostuffUtils.deserialize(Lz4Uncompress, User.class);
+        System.out.println("对象是否相等: " + user.equals(deUser));
+    }
+
+    private static void testBzip2(byte[] origin, User user) {
+        System.out.println("---------------bzip2压缩---------------");
+        // bzip2压缩
+        byte[] bzip2Compress = Bzip2Utils.compress(origin);
+        System.out.println("bzip2压缩: " + bzip2Compress.length);
+        byte[] bzip2Uncompress = Bzip2Utils.uncompress(bzip2Compress);
+        System.out.println("bzip2解压缩: " + bzip2Uncompress.length);
+        User deUser = ProtostuffUtils.deserialize(bzip2Uncompress, User.class);
+        System.out.println("对象是否相等: " + user.equals(deUser));
+    }
+
+    private static void testDeflate(byte[] origin, User user) {
+        System.out.println("---------------Deflate压缩---------------");
+        // Deflate压缩
+        byte[] deflateCompress = DeflateUtils.compress(origin);
+        System.out.println("Deflate压缩: " + deflateCompress.length);
+        byte[] deflateUncompress = DeflateUtils.uncompress(deflateCompress);
+        System.out.println("Deflate解压缩: " + deflateUncompress.length);
+        User deUser = ProtostuffUtils.deserialize(deflateUncompress, User.class);
         System.out.println("对象是否相等: " + user.equals(deUser));
     }
 }

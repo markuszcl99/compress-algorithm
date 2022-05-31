@@ -2,10 +2,7 @@ package com.markus.compress.test;
 
 import com.markus.compress.domain.User;
 import com.markus.compress.service.UserService;
-import com.markus.compress.utils.GzipUtils;
-import com.markus.compress.utils.Lz4Utils;
-import com.markus.compress.utils.ProtostuffUtils;
-import com.markus.compress.utils.SnappyUtils;
+import com.markus.compress.utils.*;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
@@ -34,6 +31,8 @@ public class PerformanceTest {
         byte[] lz4CompressBytes;
         byte[] snappyCompressBytes;
         byte[] gzipCompressBytes;
+        byte[] bzipCompressBytes;
+        byte[] deflateCompressBytes;
 
         @Setup(Level.Trial)
         public void prepare() {
@@ -43,6 +42,8 @@ public class PerformanceTest {
             lz4CompressBytes = Lz4Utils.compress(originBytes);
             snappyCompressBytes = SnappyUtils.compress(originBytes);
             gzipCompressBytes = GzipUtils.compress(originBytes);
+            bzipCompressBytes = Bzip2Utils.compress(originBytes);
+            deflateCompressBytes = DeflateUtils.compress(originBytes);
         }
     }
 
@@ -78,6 +79,7 @@ public class PerformanceTest {
         return SnappyUtils.compress(commonState.originBytes);
     }
 
+
     /**
      * snappy解压缩
      *
@@ -112,6 +114,51 @@ public class PerformanceTest {
         return GzipUtils.uncompress(commonState.gzipCompressBytes);
     }
 
+    /**
+     * bzip2压缩
+     *
+     * @param commonState
+     * @return
+     */
+    @Benchmark
+    public byte[] bzip2Compress(CommonState commonState) {
+        return Bzip2Utils.compress(commonState.originBytes);
+    }
+
+    /**
+     * bzip2压缩
+     *
+     * @param commonState
+     * @return
+     */
+    @Benchmark
+    public byte[] bzip2Uncompress(CommonState commonState) {
+        return Bzip2Utils.uncompress(commonState.bzipCompressBytes);
+    }
+
+    /**
+     * bzip2压缩
+     *
+     * @param commonState
+     * @return
+     */
+    @Benchmark
+    public byte[] deflateCompress(CommonState commonState) {
+        return DeflateUtils.compress(commonState.originBytes);
+    }
+
+    /**
+     * bzip2压缩
+     *
+     * @param commonState
+     * @return
+     */
+    @Benchmark
+    public byte[] deflateUncompress(CommonState commonState) {
+        return DeflateUtils.uncompress(commonState.deflateCompressBytes);
+    }
+
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(PerformanceTest.class.getSimpleName())
@@ -119,7 +166,7 @@ public class PerformanceTest {
                 .threads(1)
                 .warmupIterations(10)
                 .measurementIterations(10)
-                .result("PerformanceTest-v2.json")
+                .result("PerformanceTest.json")
                 .resultFormat(ResultFormatType.JSON).build();
         new Runner(opt).run();
     }
