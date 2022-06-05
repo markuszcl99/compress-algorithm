@@ -23,11 +23,15 @@ public class CompressDemo {
         byte[] origin = ProtostuffUtils.serialize(user);
         System.out.println("原始pb字节数: " + origin.length);
 
-//        testGzip(origin, user);
-//        testSnappy(origin, user);
+        testGzip(origin, user);
+        testSnappy(origin, user);
         testLz4(origin, user);
-//        testBzip2(origin, user);
-//        testDeflate(origin, user);
+        testBzip2(origin, user);
+        testDeflate(origin, user);
+
+    }
+
+    private static void test(){
         System.out.println("--------------------");
         String str = getString();
         byte[] source = str.getBytes(StandardCharsets.UTF_8);
