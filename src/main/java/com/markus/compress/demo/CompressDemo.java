@@ -5,6 +5,8 @@ import com.markus.compress.domain.User;
 import com.markus.compress.service.UserService;
 import com.markus.compress.utils.*;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author: markus
  * @date: 2022/5/22 3:52 下午
@@ -21,12 +23,43 @@ public class CompressDemo {
         byte[] origin = ProtostuffUtils.serialize(user);
         System.out.println("原始pb字节数: " + origin.length);
 
-        testGzip(origin, user);
-        testSnappy(origin, user);
+//        testGzip(origin, user);
+//        testSnappy(origin, user);
         testLz4(origin, user);
-        testBzip2(origin, user);
-        testDeflate(origin, user);
+//        testBzip2(origin, user);
+//        testDeflate(origin, user);
+        System.out.println("--------------------");
+        String str = getString();
+        byte[] source = str.getBytes(StandardCharsets.UTF_8);
+        byte[] compress = Lz4Utils.compress(source);
+        // 将compress转为字符串
+        System.out.println(translateString(compress));
+        System.out.println();
+        System.out.println("--------------------");
+        String str2 = getString2();
+        byte[] source2 = str2.getBytes(StandardCharsets.UTF_8);
+        byte[] compress2 = Lz4Utils.compress(source2);
+        byte[] uncompress = Lz4Utils.uncompress(compress2);
+        System.out.println();
     }
+
+    private static String translateString(byte[] bytes) {
+        char[] chars = new char[bytes.length];
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = (char) bytes[i];
+        }
+        String str = new String(chars);
+        return str;
+    }
+
+    private static String getString() {
+        return "fghabcde_bcdefgh_abcdefghxxxxxxx";
+    }
+
+    private static String getString2() {
+        return "abcde_fghabcde_ghxxahcde";
+    }
+
 
     private static void testGzip(byte[] origin, User user) {
         System.out.println("---------------GZIP压缩---------------");

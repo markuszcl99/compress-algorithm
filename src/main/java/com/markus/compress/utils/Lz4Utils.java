@@ -4,6 +4,9 @@ import net.jpountz.lz4.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author: markus
@@ -16,6 +19,7 @@ public class Lz4Utils {
     private static LZ4Factory factory = LZ4Factory.fastestInstance();
     private static LZ4Compressor compressor = factory.fastCompressor();
     private static LZ4FastDecompressor decompressor = factory.fastDecompressor();
+    private static LZ4SafeDecompressor safeDecompressor = factory.safeDecompressor();
 
     public static byte[] compress(byte[] bytes) {
         if (bytes == null || bytes.length == 0) {
@@ -51,5 +55,13 @@ public class Lz4Utils {
             System.err.println("lz4解压缩失败");
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+        byte[] bytes = "abcde_fghabcde_ghxxahcde".getBytes(StandardCharsets.UTF_8);
+
+        byte[] compress = compress(bytes);
+
+        byte[] decompress = uncompress(compress);
     }
 }
